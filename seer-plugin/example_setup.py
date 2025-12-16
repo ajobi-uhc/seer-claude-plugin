@@ -4,7 +4,7 @@ Example setup script that Claude would generate and run.
 
 This demonstrates how the Seer plugin works:
 1. Claude writes a script like this
-2. Runs it with: uv run python example_setup.py
+2. Runs it with: uv run --with "seer @ git+https://github.com/ajobi-uhc/seer.git" python example_setup.py
 3. Parses the JSON output
 4. Calls attach_to_session() with the results
 """

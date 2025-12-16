@@ -18,7 +18,7 @@ Seer provides GPU-accelerated sandboxed environments for running interpretabilit
 **For GPU sandboxes, you MUST:**
 
 1. **Write a setup script** that uses the `src` library to create a Modal sandbox
-2. **Run the script** with `uv run python setup.py`
+2. **Run the script** with `uv run --with "seer @ git+https://github.com/ajobi-uhc/seer.git" python setup.py`
 3. **Parse the JSON output** to get `session_id` and `jupyter_url`
 4. **Then call `attach_to_session(session_id, jupyter_url)`** to connect
 
@@ -50,7 +50,7 @@ print(json.dumps({
 ### Then Run and Connect
 
 ```bash
-uv run python setup.py
+uv run --with "seer @ git+https://github.com/ajobi-uhc/seer.git" python setup.py
 # Output: {"session_id": "abc123", "jupyter_url": "https://..."}
 ```
 
