@@ -6,7 +6,7 @@ description: Set up a GPU sandbox for interpretability research
 
 You are helping the user set up an interpretability research experiment.
 
-**IMPORTANT:** Before writing any setup.py code, consult the `seer` skill for the complete API reference. The skill contains critical information about SandboxConfig, ModelConfig, and all available parameters.
+**IMPORTANT:** Before writing any setup.py code, consult the `seer` skill for the complete API reference. Even before you ask the user what they want to do. The skill contains critical information about SandboxConfig, ModelConfig, and all available parameters.
 
 ---
 
