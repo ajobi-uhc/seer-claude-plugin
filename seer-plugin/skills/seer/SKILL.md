@@ -44,6 +44,7 @@ session = create_notebook_session(sandbox, Workspace())
 print(json.dumps({
     "session_id": session.session_id,
     "jupyter_url": session.jupyter_url,
+    "sandbox_id": sandbox.sandbox_id,  # IMPORTANT: Save this for sandbox management
 }))
 ```
 
@@ -51,7 +52,7 @@ print(json.dumps({
 
 ```bash
 uv run --with "seer @ git+https://github.com/ajobi-uhc/seer.git" python setup.py
-# Output: {"session_id": "abc123", "jupyter_url": "https://..."}
+# Output: {"session_id": "abc123", "jupyter_url": "https://...", "sandbox_id": "sb-xyz..."}
 ```
 
 ```python
@@ -60,6 +61,8 @@ attach_to_session(session_id="abc123", jupyter_url="https://...")
 ```
 
 **Only after `attach_to_session()` succeeds can you use `execute_code()`.**
+
+**Save the `sandbox_id`** - you'll need it to manage the sandbox (terminate, snapshot, exec commands, etc.) using the modal-sandbox MCP tools.
 
 ---
 
@@ -1292,6 +1295,119 @@ workspace = Workspace(libraries=[interface])
 
 ---
 
+## Modal Sandbox MCP Tools
+
+The `modal-sandbox` MCP server provides tools for managing sandboxes directly. Use these for debugging, monitoring, and cleanup.
+
+**IMPORTANT:** These tools require a `sandbox_id` which is output by your setup script. Make sure your setup script outputs `sandbox.sandbox_id` in the JSON.
+
+### Available Tools
+
+#### list_sandboxes(app_name?)
+List all running sandboxes.
+```python
+list_sandboxes()  # Lists sandboxes from default app
+list_sandboxes(app_name="my-app")  # Filter by app name
+```
+
+#### get_sandbox_info(sandbox_id)
+Get sandbox status and tunnel URLs.
+```python
+get_sandbox_info(sandbox_id="sb-xxx...")
+# Returns: {"sandbox_id": "...", "tunnels": {8888: "https://..."}, "status": "running"}
+```
+
+#### exec_in_sandbox(sandbox_id, command, timeout?)
+Execute a shell command in the sandbox.
+```python
+exec_in_sandbox(sandbox_id="sb-xxx", command="nvidia-smi")
+exec_in_sandbox(sandbox_id="sb-xxx", command="ls -la /root", timeout=30)
+# Returns: {"stdout": "...", "stderr": "...", "return_code": 0, "success": true}
+```
+
+#### exec_python_in_sandbox(sandbox_id, code, timeout?)
+Execute Python code in the sandbox.
+```python
+exec_python_in_sandbox(sandbox_id="sb-xxx", code="import torch; print(torch.cuda.is_available())")
+```
+
+#### get_gpu_status(sandbox_id)
+Quick way to check GPU status (runs nvidia-smi).
+```python
+get_gpu_status(sandbox_id="sb-xxx")
+```
+
+#### get_running_processes(sandbox_id)
+List running processes in the sandbox.
+```python
+get_running_processes(sandbox_id="sb-xxx")
+```
+
+#### terminate_sandbox(sandbox_id)
+Terminate a running sandbox.
+```python
+terminate_sandbox(sandbox_id="sb-xxx")
+# Returns: {"success": true, "message": "Sandbox sb-xxx terminated successfully"}
+```
+
+#### snapshot_sandbox(sandbox_id, description?)
+Create a filesystem snapshot for later restoration.
+```python
+snapshot_sandbox(sandbox_id="sb-xxx", description="After training")
+# Returns: {"success": true, "image_id": "im-yyy..."}
+```
+
+#### read_sandbox_file(sandbox_id, path)
+Read a file from the sandbox.
+```python
+read_sandbox_file(sandbox_id="sb-xxx", path="/root/output.txt")
+```
+
+#### write_sandbox_file(sandbox_id, path, content)
+Write a file to the sandbox.
+```python
+write_sandbox_file(sandbox_id="sb-xxx", path="/root/script.py", content="print('hello')")
+```
+
+#### list_sandbox_files(sandbox_id, path?)
+List files in a directory.
+```python
+list_sandbox_files(sandbox_id="sb-xxx", path="/root")
+```
+
+### Debugging Workflow
+
+When something goes wrong:
+
+1. **Check sandbox is running:**
+   ```python
+   get_sandbox_info(sandbox_id="sb-xxx")
+   ```
+
+2. **Check GPU status:**
+   ```python
+   get_gpu_status(sandbox_id="sb-xxx")
+   ```
+
+3. **Check processes:**
+   ```python
+   get_running_processes(sandbox_id="sb-xxx")
+   ```
+
+4. **Run diagnostic commands:**
+   ```python
+   exec_in_sandbox(sandbox_id="sb-xxx", command="df -h")  # Disk space
+   exec_in_sandbox(sandbox_id="sb-xxx", command="free -h")  # Memory
+   exec_in_sandbox(sandbox_id="sb-xxx", command="cat /var/log/jupyter.log")  # Logs
+   ```
+
+5. **Clean up when done:**
+   ```python
+   terminate_sandbox(sandbox_id="sb-xxx")
+   ```
+
+---
+
 ## Tips for Success
 
 1. **Read model_info_text**: Always show the user what models are pre-loaded
@@ -1302,6 +1418,7 @@ workspace = Workspace(libraries=[interface])
 6. **Clean up**: Terminate sandboxes when done to avoid costs
 7. **Version models**: Pin model revisions for reproducibility
 8. **Check outputs**: Always verify execution results before proceeding
+9. **Save sandbox_id**: Always output `sandbox.sandbox_id` from setup scripts for management
 
 ---
 

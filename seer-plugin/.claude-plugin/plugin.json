@@ -12,6 +12,10 @@
       "env": {
         "NOTEBOOK_OUTPUT_DIR": "${CWD}/outputs"
       }
+    },
+    "modal-sandbox": {
+      "command": "uv",
+      "args": ["run", "--with", "seer @ git+https://github.com/ajobi-uhc/seer.git", "python", "-m", "modal_sandbox_mcp.server"]
     }
   }
 }

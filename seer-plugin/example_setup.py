@@ -41,6 +41,7 @@ def main():
     result = {
         "session_id": session.session_id,
         "jupyter_url": session.jupyter_url,
+        "sandbox_id": sandbox.sandbox_id,  # For sandbox management via modal-sandbox MCP
         "notebook_path": "./outputs/notebook.ipynb",
         "status": "ready",
     }
